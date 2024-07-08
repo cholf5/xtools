@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X 直转视频 URL 转换器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .clear-btn {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .clear-btn:hover {
+            background-color: #cc0000;
+        }
+        .result {
+            display: flex;
+            align-items: center;
+        }
+        .result span {
+            flex: 1;
+        }
+        .copy-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+	<h2>X Video URL 转换器</h2>
+	<div>
+		<p> 你是否在X上见过别人发了一个视频，但是在视频的左下角有个“From 谁谁谁”？<br> </p>
+		<p> 在X的手机版上，直接在别人视频上按住不放，就会出来 post video 的选项，点击后就会有个URL到你的编辑框。<br> </p>
+		<p> 但是在网页版上是没有这个功能的，如果你在网页版上右击别人的视频，出现的 Copy video address 复制的其实是这条推的地址。<br> </p>
+		<p> 本工具就是用来解决这个问题的，可以把视频推的URL转为可转发的URL。<br> </p>
+		使用方法：<br>
+		<ol>
+			<li>找到你想转发的视频，右击，选择 Copy video address</li>
+			<li>在本工具的输入框输入这个地址，点击复制按钮</li>
+			<li>在你的编辑框输入这个地址，点击发布按钮，就可以转发该视频了</li>
+		</ol>
+	</div>
+    <div class="input-group">
+        <input type="text" id="inputUrl" placeholder="请输入网址：https://x.com/i/status/1809840865063629292">
+        <button class="clear-btn" onclick="clearInput()">清空</button>
+    </div>
+    <div class="result">
+        <span id="convertedUrl"></span>
+		<button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">复制</button>
+    </div>
+
+    <script>
+        const inputUrl = document.getElementById('inputUrl');
+        const convertedUrl = document.getElementById('convertedUrl');
+
+        inputUrl.addEventListener('input', () => {
+            convertUrl();
+        });
+
+        function clearInput() {
+            inputUrl.value = '';
+            convertUrl();
+        }
+
+        function convertUrl() {
+            const url = inputUrl.value.trim();
+            if (url.startsWith('https://x.com/i/status/')) {
+                const newUrl = url.replace('https://x.com/', 'https://twitter.com/') + '/video/1';
+                convertedUrl.textContent = newUrl;
+            } else {
+                convertedUrl.textContent = '';
+            }
+        }
+
+		function copyToClipboard() {
+			const textToCopy = convertedUrl.textContent;
+			if (textToCopy === '') {
+				return;
+			}
+			navigator.clipboard.writeText(textToCopy).then(() => {
+				const copyBtn = document.getElementById('copyBtn');
+				copyBtn.textContent = '成功';
+				copyBtn.disabled = true;
+				setTimeout(() => {
+					copyBtn.textContent = '复制';
+					copyBtn.disabled = false;
+				}, 500);
+			}).catch(err => {
+				console.error('复制失败：', err);
+			});
+		}
+    </script>
+
+</body>
+</html>
