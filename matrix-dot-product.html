@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矩阵点积计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        textarea {
+            width: 200px;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        table {
+            margin: 10px;
+            border-collapse: collapse;
+        }
+        td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>矩阵点积计算器</h1>
+    <div class="matrix-input">
+        <textarea id="matrix1" placeholder="输入矩阵1"></textarea>
+        <table id="table1"></table>
+    </div>
+    <div class="matrix-input">
+        <textarea id="matrix2" placeholder="输入矩阵2"></textarea>
+        <table id="table2"></table>
+    </div>
+    <button class="button" onclick="calculateDotProduct()">计算</button>
+    <table id="resultTable"></table>
+    <button class="button" id="copyButton" style="display:none;" onclick="copyResult()">复制</button>
+
+    <script>
+        function parseMatrix(input) {
+            return input.trim().split('\n').map(row => row.trim().split(' '));
+        }
+  
+        function buildTable(matrix, tableElement) {
+            tableElement.innerHTML = '';
+            matrix.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tableElement.appendChild(tr);
+            });
+        }
+
+        function renderMatrixInput() {
+            const matrix1 = document.getElementById('matrix1').value;
+            const matrix2 = document.getElementById('matrix2').value;
+            
+            try {
+                const parsedMatrix1 = parseMatrix(matrix1);
+                const parsedMatrix2 = parseMatrix(matrix2);
+                
+                buildTable(parsedMatrix1, document.getElementById('table1'));
+                buildTable(parsedMatrix2, document.getElementById('table2'));
+            } catch (error) {
+                console.error('Matrix format is incorrect');
+            }
+        }
+
+        document.getElementById("matrix1").addEventListener('input', renderMatrixInput);
+        document.getElementById("matrix2").addEventListener('input', renderMatrixInput);
+
+        function calculateDotProduct() {
+            const matrix1 = parseMatrix(document.getElementById('matrix1').value);
+            const matrix2 = parseMatrix(document.getElementById('matrix2').value);
+
+            const rows1 = matrix1.length;
+            const cols1 = matrix1[0].length;
+            const rows2 = matrix2.length;
+            const cols2 = matrix2[0].length;
+
+            if (cols1 !== rows2) {
+                alert('矩阵维度不匹配，无法进行点积运算');
+                return;
+            }
+
+            const result = [];
+
+            for (let i = 0; i < rows1; i++) {
+                result[i] = [];
+
+                for (let j = 0; j < cols2; j++) {
+                    let sum = '';
+                    for (let k = 0; k < cols1; k++) {
+						let m1 = Number(matrix1[i][k]);
+						let m2 = Number(matrix2[k][j]);
+
+						let term;
+						if (isNaN(m1) && isNaN(m2)) {
+							term = `${matrix1[i][k]}⋅${matrix2[k][j]}`;
+						} else if (isNaN(m1)) {
+							if (m2 === 0) {
+								term = '0';
+							} else if (m2 === 1) {
+								term = `${matrix1[i][k]}`;
+							} else {
+								term = `${matrix1[i][k]}⋅${m2}`;
+							}
+						} else if (isNaN(m2)) {
+							if (m1 === 0) {
+								term = '0';
+							} else if (m1 === 1) {
+								term = `${matrix2[k][j]}`;
+							} else {
+								term = `${m1}⋅${matrix2[k][j]}`;
+							}
+						} else {
+							term = String(m1 * m2);
+						}
+
+                        // 如果是负数，需要做处理
+                        // if (term.includes('-')) {
+                        //     term = term.split('').join('');
+                        // }
+
+                        if (sum === '') {
+                            sum = term;
+                        } else {
+                            if (term === '0') {
+								continue; // 0不需要+
+                            } else {
+                                sum += `+${term}`;
+							}
+                        }
+                    }
+					sum = simplifyExpression(sum);
+					if (sum === '') {
+						sum = '0';
+					}
+                    result[i][j] = sum;
+                }
+            }
+
+            buildTable(result, document.getElementById('resultTable'));
+            document.getElementById('copyButton').style.display = 'inline-block';
+        }
+
+        function simplifyExpression(expression) {
+            const terms = expression.split('+').filter(term => term !== '0'); // 忽略所有无效的0项
+            return terms.join('+').replace(/\+\-+/g, '-').replace(/\(\*\)/g, '');
+        }
+
+        function copyResult() {
+            const resultTable = document.getElementById('resultTable');
+            let resultString = '';
+            
+            Array.from(resultTable.rows).forEach(row => {
+                const values = Array.from(row.cells).map(cell => cell.textContent);
+                resultString += values.join(' ') + '\n';
+            });
+            
+            navigator.clipboard.writeText(resultString.trim()).then(() => alert('结果已复制')).catch(err => console.error('Could not copy text', err));
+        }
+    </script>
+</body>
+</html>
